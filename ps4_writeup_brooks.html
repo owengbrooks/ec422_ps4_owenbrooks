@@ -2211,6 +2211,11 @@ vertical-align: -.125em;
   <ul>
   <li><a href="#section" id="toc-section" class="nav-link active" data-scroll-target="#section"></a></li>
   <li><a href="#b" id="toc-b" class="nav-link" data-scroll-target="#b">2.1b</a></li>
+  <li><a href="#a" id="toc-a" class="nav-link" data-scroll-target="#a">2.2a</a></li>
+  <li><a href="#b-1" id="toc-b-1" class="nav-link" data-scroll-target="#b-1">2.2b</a></li>
+  <li><a href="#a-1" id="toc-a-1" class="nav-link" data-scroll-target="#a-1">2.3a</a></li>
+  <li><a href="#b-2" id="toc-b-2" class="nav-link" data-scroll-target="#b-2">2.3b</a></li>
+  <li><a href="#section-1" id="toc-section-1" class="nav-link" data-scroll-target="#section-1">2.4</a></li>
   </ul>
 </nav>
 </div>
@@ -2301,6 +2306,42 @@ vertical-align: -.125em;
 </div>
 </div>
 <p>It appears that liquor sales increase in the summer (which makes sense) and then spikes during the holiday season. Overall, the seasons and variation of liquor sales grows over time which suggests that logs are needed.</p>
+</section>
+<section id="a" class="level2">
+<h2 class="anchored" data-anchor-id="a">2.2a</h2>
+<p>For ARIMA one lag of dependent, two lags of error, a seasonal difference with two seasonal lags and one error lag was chosen. For ETS it says forecast errors enter additively, that it has an additive undamped trend, and that the seasonal pattern is additive.</p>
+</section>
+<section id="b-1" class="level2">
+<h2 class="anchored" data-anchor-id="b-1">2.2b</h2>
+<p>We can reject the the ljung box test and say that the residuals are not white noise.</p>
+</section>
+<section id="a-1" class="level2">
+<h2 class="anchored" data-anchor-id="a-1">2.3a</h2>
+<p>There will be 216 forecast origins (336 months - 120 window = 216).</p>
+</section>
+<section id="b-2" class="level2">
+<h2 class="anchored" data-anchor-id="b-2">2.3b</h2>
+<p>The first forecast is Dec 2001 and last is Nov 2019 (it forecasts Dec 2019). Across the board, the ARIMA model forecasts more accurately in both RMSE and MAE.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>liquor_cv_fit <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">&quot;results/liquor_cv_fit.rds&quot;</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>liquor_cv_fc <span class="ot">&lt;-</span> liquor_cv_fit <span class="sc">|&gt;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">forecast</span>(<span class="at">h =</span> <span class="dv">1</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>liquor_cv_fc <span class="sc">|&gt;</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">accuracy</span>(liquor, <span class="at">measures =</span> <span class="fu">list</span>(<span class="at">RMSE =</span> RMSE, <span class="at">MAE =</span> MAE))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 4
+  .model .type  RMSE   MAE
+  &lt;chr&gt;  &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;
+1 arima  Test   81.6  65.8
+2 ets    Test   94.4  72.3
+3 snaive Test  161.  137. </code></pre>
+</div>
+</div>
+</section>
+<section id="section-1" class="level2">
+<h2 class="anchored" data-anchor-id="section-1">2.4</h2>
+<p>The horse race between ARIMA and ETS has DM stat of -2.8635 and a p-value of 0.004604 and hence we conclude that ARIMA is significantly better than ETS. Between ARIMA and SNAIVE the DM stat is -10.72 and p-value is 2.2e-16 and so we conclude that ARIMA wins this horse race as well.</p>
 </section>
 
 </main>

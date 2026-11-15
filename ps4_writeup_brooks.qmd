@@ -55,3 +55,33 @@ liquor |>
 ```
 
 It appears that liquor sales increase in the summer (which makes sense) and then spikes during the holiday season. Overall, the seasons and variation of liquor sales grows over time which suggests that logs are needed.
+
+## 2.2a
+
+For ARIMA one lag of dependent, two lags of error, a seasonal difference with two seasonal lags and one error lag was chosen. For ETS it says forecast errors enter additively, that it has an additive undamped trend, and that the seasonal pattern is additive.
+
+## 2.2b
+
+We can reject the the ljung box test and say that the residuals are not white noise.
+
+## 2.3a
+
+There will be 216 forecast origins (336 months - 120 window = 216).
+
+## 2.3b
+
+The first forecast is Dec 2001 and last is Nov 2019 (it forecasts Dec 2019). Across the board, the ARIMA model forecasts more accurately in both RMSE and MAE.
+
+```{r}
+liquor_cv_fit <- readRDS("results/liquor_cv_fit.rds")
+
+liquor_cv_fc <- liquor_cv_fit |>
+  forecast(h = 1)
+liquor_cv_fc |>
+  accuracy(liquor, measures = list(RMSE = RMSE, MAE = MAE))
+
+```
+
+## 2.4
+
+The horse race between ARIMA and ETS has DM stat of -2.8635 and a p-value of 0.004604 and hence we conclude that ARIMA is significantly better than ETS. Between ARIMA and SNAIVE the DM stat is -10.72 and p-value is 2.2e-16 and so we conclude that ARIMA wins this horse race as well.
