@@ -1,26 +1,57 @@
 ---
-title: "ps4_writeup_brooks"
-format: html
-editor: visual
+title: "Problem Set 4"
+author: "Your Name"
+date: today
+format:
+  html:
+    toc: true
+    embed-resources: true
+execute:
+  warning: false
+  message: false
 ---
 
-## Quarto
-
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
-
-## Running Code
-
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+## 
 
 ```{r}
-1 + 1
+library(tidyverse)
+library(fpp3)
+library(BVAR)
+
 ```
 
-You can add options to executable code like this
+## 2.1b
 
 ```{r}
-#| echo: false
-2 * 2
+liquor_raw <- read_csv(
+  "data/MRTSSM4453USN.csv",
+  na = ".",
+  col_types = cols(
+    observation_date = col_date(format = "%Y-%m-%d"),
+    MRTSSM4453USN = col_double()
+  )
+)
+
+
+liquor <- liquor_raw |>
+  transmute(Month = yearmonth(observation_date), sales = MRTSSM4453USN) |>
+  as_tsibble(index = Month) |>
+  filter(Month <= yearmonth("2019 Dec"))
+
+
+autoplot(liquor, sales) +
+  labs(
+    title = "Monthly US Liquor Sales",
+    y = "$ Millions",
+    x = "Year"
+  ) 
+
+liquor |>
+  gg_season(log(sales)) +
+  labs(title = "Seasonal Plot: Monthly US Liquor Sales",
+       y = "Log Sales ($ Millions)",
+       x = "Month")
+
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+It appears that liquor sales increase in the summer (which makes sense) and then spikes during the holiday season. Overall, the seasons and variation of liquor sales grows over time which suggests that logs are needed.
