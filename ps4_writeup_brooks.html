@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Your Name">
-<meta name="dcterms.date" content="2026-11-14">
+<meta name="dcterms.date" content="2026-11-15">
 
 <title>Problem Set 4</title>
 <style>
@@ -2216,6 +2216,10 @@ vertical-align: -.125em;
   <li><a href="#a-1" id="toc-a-1" class="nav-link" data-scroll-target="#a-1">2.3a</a></li>
   <li><a href="#b-2" id="toc-b-2" class="nav-link" data-scroll-target="#b-2">2.3b</a></li>
   <li><a href="#section-1" id="toc-section-1" class="nav-link" data-scroll-target="#section-1">2.4</a></li>
+  <li><a href="#section-2" id="toc-section-2" class="nav-link" data-scroll-target="#section-2">3</a></li>
+  <li><a href="#b-3" id="toc-b-3" class="nav-link" data-scroll-target="#b-3">3b</a></li>
+  <li><a href="#section-3" id="toc-section-3" class="nav-link" data-scroll-target="#section-3">4.2</a></li>
+  <li><a href="#b-4" id="toc-b-4" class="nav-link" data-scroll-target="#b-4">4.3b</a></li>
   </ul>
 </nav>
 </div>
@@ -2240,7 +2244,7 @@ vertical-align: -.125em;
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">November 14, 2026</p>
+      <p class="date">November 15, 2026</p>
     </div>
   </div>
   
@@ -2337,11 +2341,265 @@ vertical-align: -.125em;
 2 ets    Test   94.4  72.3
 3 snaive Test  161.  137. </code></pre>
 </div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>liquor_errs <span class="ot">&lt;-</span> liquor_cv_fc <span class="sc">|&gt;</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">|&gt;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(<span class="fu">as_tibble</span>(liquor) <span class="sc">|&gt;</span> <span class="fu">select</span>(Month, <span class="at">actual =</span> sales), <span class="at">by =</span> <span class="st">&quot;Month&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">e =</span> actual <span class="sc">-</span> .mean) <span class="sc">|&gt;</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Month, .model, e) <span class="sc">|&gt;</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> .model, <span class="at">values_from =</span> e)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>forecast<span class="sc">::</span><span class="fu">dm.test</span>(liquor_errs<span class="sc">$</span>arima, liquor_errs<span class="sc">$</span>ets, <span class="at">h =</span> <span class="dv">1</span>, <span class="at">power =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Diebold-Mariano Test
+
+data:  liquor_errs$arimaliquor_errs$ets
+DM = -2.8635, Forecast horizon = 1, Loss function power = 2, p-value =
+0.004604
+alternative hypothesis: two.sided</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>forecast<span class="sc">::</span><span class="fu">dm.test</span>(liquor_errs<span class="sc">$</span>arima, liquor_errs<span class="sc">$</span>snaive, <span class="at">h =</span> <span class="dv">1</span>, <span class="at">power =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Diebold-Mariano Test
+
+data:  liquor_errs$arimaliquor_errs$snaive
+DM = -10.724, Forecast horizon = 1, Loss function power = 2, p-value &lt;
+2.2e-16
+alternative hypothesis: two.sided</code></pre>
+</div>
 </div>
 </section>
 <section id="section-1" class="level2">
 <h2 class="anchored" data-anchor-id="section-1">2.4</h2>
 <p>The horse race between ARIMA and ETS has DM stat of -2.8635 and a p-value of 0.004604 and hence we conclude that ARIMA is significantly better than ETS. Between ARIMA and SNAIVE the DM stat is -10.72 and p-value is 2.2e-16 and so we conclude that ARIMA wins this horse race as well.</p>
+</section>
+<section id="section-2" class="level2">
+<h2 class="anchored" data-anchor-id="section-2">3</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>liquor_combo_fc <span class="ot">&lt;-</span> liquor_cv_fit <span class="sc">|&gt;</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">combo =</span> (arima <span class="sc">+</span> ets) <span class="sc">/</span> <span class="dv">2</span>) <span class="sc">|&gt;</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">forecast</span>(<span class="at">h=</span><span class="dv">1</span>)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>liquor_combo_fc <span class="sc">|&gt;</span> </span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">accuracy</span>(liquor, <span class="at">measures =</span> <span class="fu">list</span>(<span class="at">RMSE =</span> RMSE, <span class="at">MAE =</span> MAE))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 4
+  .model .type  RMSE   MAE
+  &lt;chr&gt;  &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;
+1 arima  Test   81.6  65.8
+2 combo  Test   85.3  66.9
+3 ets    Test   94.4  72.3
+4 snaive Test  161.  137. </code></pre>
+</div>
+</div>
+<p>Combo lands in between ETS and ARIMA, which makes sense since its just a combination of the two.</p>
+</section>
+<section id="b-3" class="level2">
+<h2 class="anchored" data-anchor-id="b-3">3b</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cor</span>(liquor_errs<span class="sc">$</span>arima, liquor_errs<span class="sc">$</span>ets)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.8781934</code></pre>
+</div>
+</div>
+<p>The errors are positively correlated meaning that there wont’ be much gain in combining the models. They are estimating something similar and doing it in a similar way and with a DM showing ARIMA just does it better, combining them only adds noise.</p>
+</section>
+<section id="section-3" class="level2">
+<h2 class="anchored" data-anchor-id="section-3">4.2</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>qd_raw <span class="ot">&lt;-</span>  <span class="fu">read_csv</span>(<span class="st">&quot;data/fredqd_2026-09.csv&quot;</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="sc">-</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>))</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>growth <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="dv">100</span> <span class="sc">*</span> <span class="fu">difference</span>(<span class="fu">log</span>(x))</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>qd <span class="ot">&lt;-</span> qd_raw <span class="sc">|&gt;</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">date =</span> <span class="fu">as.Date</span>(sasdate, <span class="st">&quot;%m/%d/%Y&quot;</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transmute</span>(date,</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>            <span class="at">gdp    =</span> <span class="fu">growth</span>(GDPC1),     <span class="co"># real GDP</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>            <span class="at">cons   =</span> <span class="fu">growth</span>(PCECC96),   <span class="co"># real consumption</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>            <span class="at">inv    =</span> <span class="fu">growth</span>(GPDIC1),    <span class="co"># real investment</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>            <span class="at">emp    =</span> <span class="fu">growth</span>(PAYEMS),    <span class="co"># payroll employment</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>            <span class="at">infl   =</span> <span class="fu">growth</span>(GDPCTPI),   <span class="co"># GDP price index</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>            <span class="at">unrate =</span> <span class="fu">difference</span>(UNRATE),     <span class="co"># unemployment rate</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>            <span class="at">ffr    =</span> <span class="fu">difference</span>(FEDFUNDS),   <span class="co"># federal funds rate</span></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>            <span class="at">gs10   =</span> <span class="fu">difference</span>(GS10)) <span class="sc">|&gt;</span>    <span class="co"># 10-year Treasury yield</span></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(date <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;1960-03-01&quot;</span>), date <span class="sc">&lt;=</span> <span class="fu">as.Date</span>(<span class="st">&quot;2019-12-01&quot;</span>))</span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> qd <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="sc">-</span>date) <span class="sc">|&gt;</span> <span class="fu">as.matrix</span>()</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(y)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 240</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(y)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>            gdp        cons         inv        emp      infl  unrate     ffr
+[1,]  2.2237184  0.95210372   9.5789412  1.2792747 0.1884647 -0.4667 -0.0567
+[2,] -0.5398116  1.25352433  -9.7837838  0.2416811 0.3564604  0.1000 -0.2366
+[3,]  0.4887350 -0.40052924  -0.2544693 -0.5091283 0.4325238  0.3000 -0.7600
+[4,] -1.2914344  0.12942668 -11.7409889 -0.5914079 0.4370749  0.7334 -0.6400
+[5,]  0.6727499 -0.03714266   2.5619282 -0.5862248 0.1153772  0.5333 -0.2934
+[6,]  1.6836022  1.47721924   6.7723497  0.3046958 0.1983937  0.2000 -0.2700
+        gs10
+[1,] -0.0966
+[2,] -0.2267
+[3,] -0.4267
+[4,]  0.0534
+[5,] -0.1000
+[6,]  0.0033</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>N <span class="ot">&lt;-</span> <span class="fu">nrow</span>(y)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>origins <span class="ot">&lt;-</span> <span class="dv">120</span><span class="sc">:</span>(N <span class="sc">-</span><span class="dv">1</span>)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>actual <span class="ot">&lt;-</span> y[<span class="dv">121</span><span class="sc">:</span>N, ]</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>var_ols_fc <span class="ot">&lt;-</span> <span class="cf">function</span>(z, p) {</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>  e <span class="ot">&lt;-</span> <span class="fu">embed</span>(z, p <span class="sc">+</span> <span class="dv">1</span>)            <span class="co"># columns: y_t, then its lags 1 to p</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>  M <span class="ot">&lt;-</span> <span class="fu">ncol</span>(z)                    <span class="co"># number of variables</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>  B <span class="ot">&lt;-</span> <span class="fu">coef</span>(<span class="fu">lm</span>(e[, <span class="dv">1</span><span class="sc">:</span>M] <span class="sc">~</span> e[, <span class="sc">-</span>(<span class="dv">1</span><span class="sc">:</span>M)]))</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="fu">t</span>(z[<span class="fu">nrow</span>(z)<span class="sc">:</span>(<span class="fu">nrow</span>(z) <span class="sc">-</span> p <span class="sc">+</span> <span class="dv">1</span>), ]))   <span class="co"># constant, latest p lags</span></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>  x <span class="sc">%*%</span> B</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>fc_var1 <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>fc_var4 <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (T <span class="cf">in</span> origins) {</span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>  fc_var1 <span class="ot">&lt;-</span> <span class="fu">rbind</span>(fc_var1, <span class="fu">var_ols_fc</span>(y[<span class="dv">1</span><span class="sc">:</span>T, ], <span class="dv">1</span>))</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>  fc_var4 <span class="ot">&lt;-</span> <span class="fu">rbind</span>(fc_var4, <span class="fu">var_ols_fc</span>(y[<span class="dv">1</span><span class="sc">:</span>T, ], <span class="dv">4</span>))</span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>rmse_by_var <span class="ot">&lt;-</span> <span class="cf">function</span>(f) <span class="fu">sqrt</span>(<span class="fu">colMeans</span>((actual <span class="sc">-</span> f)<span class="sc">^</span><span class="dv">2</span>))</span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a><span class="fu">rmse_by_var</span>(fc_var1)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>      gdp      cons       inv       emp      infl    unrate       ffr      gs10 
+0.5130384 0.4598547 2.4927057 0.1956584 0.2084055 0.1988068 0.3902989 0.3610310 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rmse_by_var</span>(fc_var4)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>      gdp      cons       inv       emp      infl    unrate       ffr      gs10 
+0.5693241 0.5268484 2.5212629 0.2277561 0.2069608 0.2153966 0.4973504 0.3789663 </code></pre>
+</div>
+</div>
+<p>Across the board, the smaller model forecasts better. It does so across all variables besides gs10. The smaller model forecasts better potentially because it adding more variables just adds more noise to the estimate without any extra signal. I don’t think RMSE would be fair since they were all on the same evaluation sample.</p>
+</section>
+<section id="b-4" class="level2">
+<h2 class="anchored" data-anchor-id="b-4">4.3b</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>var_results <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">&quot;results/var_results.rds&quot;</span>)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>var_results <span class="sc">|&gt;</span> knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="at">digits =</span> <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 13%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 32%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Variable</th>
+<th style="text-align: right;">VAR(1)</th>
+<th style="text-align: right;">VAR(4)</th>
+<th style="text-align: right;">BVAR(4), lambda = 0.3</th>
+<th style="text-align: right;">BVAR(4), lambda = 0.05</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">gdp</td>
+<td style="text-align: right;">0.513</td>
+<td style="text-align: right;">0.569</td>
+<td style="text-align: right;">0.539</td>
+<td style="text-align: right;">0.567</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">cons</td>
+<td style="text-align: right;">0.460</td>
+<td style="text-align: right;">0.527</td>
+<td style="text-align: right;">0.486</td>
+<td style="text-align: right;">0.495</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">inv</td>
+<td style="text-align: right;">2.493</td>
+<td style="text-align: right;">2.521</td>
+<td style="text-align: right;">2.385</td>
+<td style="text-align: right;">2.698</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">emp</td>
+<td style="text-align: right;">0.196</td>
+<td style="text-align: right;">0.228</td>
+<td style="text-align: right;">0.211</td>
+<td style="text-align: right;">0.315</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">infl</td>
+<td style="text-align: right;">0.208</td>
+<td style="text-align: right;">0.207</td>
+<td style="text-align: right;">0.197</td>
+<td style="text-align: right;">0.330</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">unrate</td>
+<td style="text-align: right;">0.199</td>
+<td style="text-align: right;">0.215</td>
+<td style="text-align: right;">0.203</td>
+<td style="text-align: right;">0.216</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">ffr</td>
+<td style="text-align: right;">0.390</td>
+<td style="text-align: right;">0.497</td>
+<td style="text-align: right;">0.414</td>
+<td style="text-align: right;">0.358</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">gs10</td>
+<td style="text-align: right;">0.361</td>
+<td style="text-align: right;">0.379</td>
+<td style="text-align: right;">0.359</td>
+<td style="text-align: right;">0.362</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>The BVAR(4) with lambda=0.3 beats the OLS VAR(4) on every variable. The reason is that it shrinks the lags biasing the coefficients a little bit but in turn significantly decreases the variance. Compared to VAR(1), VAR(1) wins on some while loses on others which makes sense in part since both deal with decreasing the SE but one does it through shrinkage the other just cutting. At lambda=0.05 I think the model overshrinks and gets rid of information biasing the estimate more than it helps.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>e_var4 <span class="ot">&lt;-</span> actual[, <span class="st">&quot;gdp&quot;</span>] <span class="sc">-</span> fc_var4[, <span class="dv">1</span>]</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>e_bvar <span class="ot">&lt;-</span> actual[, <span class="st">&quot;gdp&quot;</span>] <span class="sc">-</span> fc_bvar_03[, <span class="dv">1</span>]</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>forecast<span class="sc">::</span><span class="fu">dm.test</span>(e_var4, e_bvar, <span class="at">h =</span> <span class="dv">1</span>, <span class="at">power =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Diebold-Mariano Test
+
+data:  e_var4e_bvar
+DM = 2.1366, Forecast horizon = 1, Loss function power = 2, p-value =
+0.03468
+alternative hypothesis: two.sided</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>e_var4_ffr <span class="ot">&lt;-</span> actual[, <span class="st">&quot;ffr&quot;</span>] <span class="sc">-</span> fc_var4[, <span class="dv">7</span>]</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>e_bvar_ffr <span class="ot">&lt;-</span> actual[, <span class="st">&quot;ffr&quot;</span>] <span class="sc">-</span> fc_bvar_03[, <span class="dv">7</span>]</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>forecast<span class="sc">::</span><span class="fu">dm.test</span>(e_var4_ffr, e_bvar_ffr, <span class="at">h =</span> <span class="dv">1</span>, <span class="at">power =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Diebold-Mariano Test
+
+data:  e_var4_ffre_bvar_ffr
+DM = 1.9999, Forecast horizon = 1, Loss function power = 2, p-value =
+0.04779
+alternative hypothesis: two.sided</code></pre>
+</div>
+</div>
+<p>Both DM stats are positive, so the BVAR(4) lambda = 0.3 is the better model . The FFR that has the largest RMSE is only barely significant suggesting that the small gaps in 4.3b shouldn’t really be seen as meaningful.</p>
 </section>
 
 </main>

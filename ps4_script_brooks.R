@@ -78,7 +78,103 @@ liquor_errs <- liquor_cv_fc |>
 
 forecast::dm.test(liquor_errs$arima, liquor_errs$ets, h=1, power=2)
 
-
-
 forecast::dm.test(liquor_errs$arima, liquor_errs$snaive, h=1, power=2)
 
+
+liquor_combo_fc <- liquor_cv_fit |>
+  mutate(combo = (arima + ets) / 2) |>
+  forecast(h=1)
+
+liquor_combo_fc |> 
+  accuracy(liquor, measures = list(RMSE = RMSE, MAE = MAE))
+
+qd_raw <-  read_csv("data/fredqd_2026-09.csv", show_col_types = FALSE) |>
+  slice(-(1:2))
+
+
+
+growth <- function(x) 100 * difference(log(x))
+
+qd <- qd_raw |>
+  mutate(date = as.Date(sasdate, "%m/%d/%Y")) |>
+  transmute(date,
+            gdp    = growth(GDPC1),     # real GDP
+            cons   = growth(PCECC96),   # real consumption
+            inv    = growth(GPDIC1),    # real investment
+            emp    = growth(PAYEMS),    # payroll employment
+            infl   = growth(GDPCTPI),   # GDP price index
+            unrate = difference(UNRATE),     # unemployment rate
+            ffr    = difference(FEDFUNDS),   # federal funds rate
+            gs10   = difference(GS10)) |>    # 10-year Treasury yield
+  filter(date >= as.Date("1960-03-01"), date <= as.Date("2019-12-01"))
+
+y <- qd |> select(-date) |> as.matrix()
+
+nrow(y)
+head(y)
+
+
+N <- nrow(y)
+origins <- 120:(N -1)
+actual <- y[121:N, ]
+
+
+var_ols_fc <- function(z, p) {
+  e <- embed(z, p + 1)            # columns: y_t, then its lags 1 to p
+  M <- ncol(z)                    # number of variables
+  B <- coef(lm(e[, 1:M] ~ e[, -(1:M)]))
+  x <- c(1, t(z[nrow(z):(nrow(z) - p + 1), ]))   # constant, latest p lags
+  x %*% B
+}
+
+fc_var1 <- NULL
+fc_var4 <- NULL
+for (T in origins) {
+  fc_var1 <- rbind(fc_var1, var_ols_fc(y[1:T, ], 1))
+  fc_var4 <- rbind(fc_var4, var_ols_fc(y[1:T, ], 4))
+}
+
+
+rmse_by_var <- function(f) sqrt(colMeans((actual - f)^2))
+
+rmse_by_var(fc_var1)
+rmse_by_var(fc_var4)
+
+
+
+
+bvar_cv <- function(lambda) {
+  pr <- bv_priors(hyper = "lambda",
+                  mn = bv_mn(lambda = bv_lambda(mode = lambda, sd = 0.4,
+                                                min = 0.999 * lambda,
+                                                max = 1.001 * lambda),
+                             b = 0))
+  fc <- NULL
+  for (T in origins) {
+    fit_T <- bvar(y[1:T, ], lags = 4, priors = pr,
+                  n_draw = 2000, n_burn = 1000, verbose = FALSE)
+    x <- c(1, t(y[T:(T - 3), ]))         # constant and 4 lags of each variable
+    fc <- rbind(fc, x %*% coef(fit_T))   # forecast of y_{T+1}
+  }
+  fc
+}
+
+set.seed(422)
+fc_bvar_03 <- bvar_cv(0.3)
+saveRDS(fc_bvar_03, "results/fc_bvar_03.rds")
+
+
+set.seed(422)
+fc_bvar_005 <- bvar_cv(0.05)
+
+var_results <- tibble(
+  Variable = colnames(y),
+  `VAR(1)` = rmse_by_var(fc_var1),
+  `VAR(4)` = rmse_by_var(fc_var4),
+  `BVAR(4), lambda = 0.3` = rmse_by_var(fc_bvar_03),
+  `BVAR(4), lambda = 0.05` = rmse_by_var(fc_bvar_005)
+)
+
+saveRDS(var_results, "results/var_results.rds")
+
+var_results |> knitr::kable(digits = 3)

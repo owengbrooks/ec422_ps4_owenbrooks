@@ -80,8 +80,158 @@ liquor_cv_fc <- liquor_cv_fit |>
 liquor_cv_fc |>
   accuracy(liquor, measures = list(RMSE = RMSE, MAE = MAE))
 
+liquor_errs <- liquor_cv_fc |>
+  as_tibble() |>
+  left_join(as_tibble(liquor) |> select(Month, actual = sales), by = "Month") |>
+  mutate(e = actual - .mean) |>
+  select(Month, .model, e) |>
+  pivot_wider(names_from = .model, values_from = e)
+
+forecast::dm.test(liquor_errs$arima, liquor_errs$ets, h = 1, power = 2)
+forecast::dm.test(liquor_errs$arima, liquor_errs$snaive, h = 1, power = 2)
+
+
 ```
 
 ## 2.4
 
 The horse race between ARIMA and ETS has DM stat of -2.8635 and a p-value of 0.004604 and hence we conclude that ARIMA is significantly better than ETS. Between ARIMA and SNAIVE the DM stat is -10.72 and p-value is 2.2e-16 and so we conclude that ARIMA wins this horse race as well.
+
+## 3
+
+```{r}
+liquor_combo_fc <- liquor_cv_fit |>
+  mutate(combo = (arima + ets) / 2) |>
+  forecast(h=1)
+
+liquor_combo_fc |> 
+  accuracy(liquor, measures = list(RMSE = RMSE, MAE = MAE))
+
+```
+
+Combo lands in between ETS and ARIMA, which makes sense since its just a combination of the two.
+
+## 3b
+
+```{r}
+
+cor(liquor_errs$arima, liquor_errs$ets)
+```
+
+The errors are positively correlated meaning that there wont' be much gain in combining the models. They are estimating something similar and doing it in a similar way and with a DM showing ARIMA just does it better, combining them only adds noise.
+
+## 4.2
+
+```{r}
+#| include: false
+# --- data ---
+qd_raw <- read_csv("data/fredqd_2026-09.csv", show_col_types = FALSE) |> slice(-(1:2))
+growth <- function(x) 100 * difference(log(x))
+qd <- qd_raw |>
+  mutate(date = as.Date(sasdate, "%m/%d/%Y")) |>
+  transmute(date,
+            gdp = growth(GDPC1), cons = growth(PCECC96), inv = growth(GPDIC1),
+            emp = growth(PAYEMS), infl = growth(GDPCTPI),
+            unrate = difference(UNRATE), ffr = difference(FEDFUNDS),
+            gs10 = difference(GS10)) |>
+  filter(date >= as.Date("1960-03-01"), date <= as.Date("2019-12-01"))
+y <- qd |> select(-date) |> as.matrix()
+
+N <- nrow(y); origins <- 120:(N - 1); actual <- y[121:N, ]
+
+# --- fast: OLS VARs (a few seconds) ---
+var_ols_fc <- function(z, p) {
+  e <- embed(z, p + 1); M <- ncol(z)
+  B <- coef(lm(e[, 1:M] ~ e[, -(1:M)]))
+  x <- c(1, t(z[nrow(z):(nrow(z) - p + 1), ]))
+  x %*% B
+}
+fc_var1 <- NULL; fc_var4 <- NULL
+for (T in origins) {
+  fc_var1 <- rbind(fc_var1, var_ols_fc(y[1:T, ], 1))
+  fc_var4 <- rbind(fc_var4, var_ols_fc(y[1:T, ], 4))
+}
+
+# --- slow: load saved BVAR results ---
+fc_bvar_03  <- readRDS("results/fc_bvar_03.rds")
+var_results <- readRDS("results/var_results.rds")
+```
+
+```{r}
+qd_raw <-  read_csv("data/fredqd_2026-09.csv", show_col_types = FALSE) |>
+  slice(-(1:2))
+
+
+
+growth <- function(x) 100 * difference(log(x))
+
+qd <- qd_raw |>
+  mutate(date = as.Date(sasdate, "%m/%d/%Y")) |>
+  transmute(date,
+            gdp    = growth(GDPC1),     # real GDP
+            cons   = growth(PCECC96),   # real consumption
+            inv    = growth(GPDIC1),    # real investment
+            emp    = growth(PAYEMS),    # payroll employment
+            infl   = growth(GDPCTPI),   # GDP price index
+            unrate = difference(UNRATE),     # unemployment rate
+            ffr    = difference(FEDFUNDS),   # federal funds rate
+            gs10   = difference(GS10)) |>    # 10-year Treasury yield
+  filter(date >= as.Date("1960-03-01"), date <= as.Date("2019-12-01"))
+
+y <- qd |> select(-date) |> as.matrix()
+
+nrow(y)
+head(y)
+
+
+N <- nrow(y)
+origins <- 120:(N -1)
+actual <- y[121:N, ]
+
+
+var_ols_fc <- function(z, p) {
+  e <- embed(z, p + 1)            # columns: y_t, then its lags 1 to p
+  M <- ncol(z)                    # number of variables
+  B <- coef(lm(e[, 1:M] ~ e[, -(1:M)]))
+  x <- c(1, t(z[nrow(z):(nrow(z) - p + 1), ]))   # constant, latest p lags
+  x %*% B
+}
+
+fc_var1 <- NULL
+fc_var4 <- NULL
+for (T in origins) {
+  fc_var1 <- rbind(fc_var1, var_ols_fc(y[1:T, ], 1))
+  fc_var4 <- rbind(fc_var4, var_ols_fc(y[1:T, ], 4))
+}
+
+
+rmse_by_var <- function(f) sqrt(colMeans((actual - f)^2))
+
+rmse_by_var(fc_var1)
+rmse_by_var(fc_var4)
+
+```
+
+Across the board, the smaller model forecasts better. It does so across all variables besides gs10. The smaller model forecasts better potentially because it adding more variables just adds more noise to the estimate without any extra signal. I don't think RMSE would be fair since they were all on the same evaluation sample.
+
+## 4.3b
+
+```{r}
+var_results <- readRDS("results/var_results.rds")
+var_results |> knitr::kable(digits = 3)
+```
+
+The BVAR(4) with lambda=0.3 beats the OLS VAR(4) on every variable. The reason is that it shrinks the lags biasing the coefficients a little bit but in turn significantly decreases the variance. Compared to VAR(1), VAR(1) wins on some while loses on others which makes sense in part since both deal with decreasing the SE but one does it through shrinkage the other just cutting. At lambda=0.05 I think the model overshrinks and gets rid of information biasing the estimate more than it helps.
+
+```{r}
+e_var4 <- actual[, "gdp"] - fc_var4[, 1]
+e_bvar <- actual[, "gdp"] - fc_bvar_03[, 1]
+
+forecast::dm.test(e_var4, e_bvar, h = 1, power = 2)
+
+e_var4_ffr <- actual[, "ffr"] - fc_var4[, 7]
+e_bvar_ffr <- actual[, "ffr"] - fc_bvar_03[, 7]
+forecast::dm.test(e_var4_ffr, e_bvar_ffr, h = 1, power = 2)
+```
+
+Both DM stats are positive, so the BVAR(4) lambda = 0.3 is the better model . The FFR that has the largest RMSE is only barely significant suggesting that the small gaps in 4.3b shouldn't really be seen as meaningful.
