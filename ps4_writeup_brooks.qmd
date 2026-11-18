@@ -364,3 +364,7 @@ res |> print(width = Inf)
 ```
 
 Yes the factors help as both RMSE and MAE fall. Eyeballing it, it seems RMSE and MAE both fall by 10-15%. Now calculating it (2.11-1.89)/2.11 = 10.4% decrease for RMSE and (1.58-1.35)/1.58 =14.6% decrease in MAE. Yes this result is significant and we reject at all conventional significance levels. In total, the factors significantly improve the forecast and summarize the information from all the 121 series.
+
+## Reflection
+
+I think that this has so far been the most interesting problem set (and one I will continually learn from). Actually coding up and implementing BVARs and VARs is exactly what I have been trying to learn and prepare myself for my work this summer. The common thread from all of this work is that there is a constant bias-variance trade off at play. With shrinkage (via BVAR) we are pulling noisy coefficients towards zero to reduce the estimation noise or when its with equal weights estimating more is not necessarily the best thing. With factors, reducing the information we are regressing on as much as possible helps us reduce estimation error in the same way. At the end of the day, all these methods are used to find signal in noise which in our world over lots of data is exactly what we need.
