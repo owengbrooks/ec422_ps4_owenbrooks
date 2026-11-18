@@ -13,6 +13,8 @@ execute:
 
 ## 
 
+**GitHub repo:** <https://github.com/owengbrooks/ec422_ps4_owenbrooks>
+
 ```{r}
 library(tidyverse)
 library(fpp3)
@@ -241,6 +243,33 @@ Both DM stats are positive, so the BVAR(4) lambda = 0.3 is the better model . Th
 ## 5.1c
 
 ```{r}
+#| include: false
+md_raw <- read_csv("data/fredmd_2026-09.csv", show_col_types = FALSE)
+tcode  <- unlist(md_raw[1, -1])
+md     <- md_raw[-1, ] |> mutate(date = as.Date(sasdate, "%m/%d/%Y"))
+
+transform_series <- function(x, code) {
+  d <- function(v) c(NA, diff(v))
+  switch(as.character(code),
+         "1" = x, "2" = d(x), "3" = d(d(x)), "4" = log(x),
+         "5" = 100 * d(log(x)), "6" = 100 * d(d(log(x))),
+         "7" = d(x / dplyr::lag(x) - 1))
+}
+
+fm <- map2_dfc(md[names(tcode)], tcode, transform_series) |>
+  mutate(date = md$date, .before = 1) |>
+  filter(date >= as.Date("1960-03-01"), date <= as.Date("2019-12-01"))
+fm <- fm[, colSums(is.na(fm)) == 0]
+
+Z    <- fm |> select(-date) |> as.matrix()
+pc   <- prcomp(scale(Z))
+ip   <- fm$INDPRO
+n    <- nrow(Z)
+init <- which(fm$date == as.Date("1989-12-01"))
+
+```
+
+```{r}
 tcode[c("INDPRO", "PAYEMS", "cpiaucsl", "FEDFUNDS")]
 
 ```
@@ -277,3 +306,61 @@ sort(abs(cor(pc$x[, 2], Z))[1, ], decreasing = TRUE)[1:8]
 ```
 
 According to the appendix names, the first factor is showing employment, industrial production, and manufacturing stuff and functionally is capturing real economic activity in the real economy. The plot shows how this responds to recessions (goes down). The second factor is loading on price indexes of goods and commodities and transportation so its capturing the inflation shocks.
+
+## 5.3
+
+```{r}
+ip <- fm$INDPRO
+n <- nrow(Z)
+init <- which(fm$date == as.Date("1989-12-01"))
+
+e_ar <- NULL
+e_fa <- NULL
+for (T in init:(n - 1)) {
+  F_T <- prcomp(scale(Z[1:T, ]))$x[, 1:3]         # factors using data through T
+  d <- data.frame(y_next = ip[2:T], y = ip[1:(T - 1)], F_T[1:(T - 1), ])
+  new <- data.frame(y = ip[T], t(F_T[T, ]))
+  e_ar <- c(e_ar, ip[T + 1] - predict(lm(y_next ~ y, d), new))
+  e_fa <- c(e_fa, ip[T + 1] - predict(lm(y_next ~ ., d), new))
+}
+
+c(RMSE_AR = sqrt(mean(e_ar^2)), RMSE_FA = sqrt(mean(e_fa^2)))
+
+```
+
+Yes, indeed, I get the same numbers. It would allow us to pick the best factors for the entire sample and mechanically allow it to beat the horse race (it would overfit and always win since it would be trained on testing data).
+
+## 5.4
+
+```{r}
+direct_race <- function(series, h = 12, r = 3) {
+  lv <- md |>
+    mutate(log_x = log(.data[[series]]),
+           g = 100 * (log_x - lag(log_x))) |>
+    filter(date >= as.Date("1960-03-01"), date <= as.Date("2019-12-01"))
+  yh <- 100 * (lead(lv$log_x, h) - lv$log_x)      # growth over the next h months
+  g  <- lv$g                                      # growth over the latest month
+  
+  e_ar <- NULL
+  e_fa <- NULL
+  for (T in init:(n - h)) {
+    F_T <- prcomp(scale(Z[1:T, ]))$x[, 1:r, drop = FALSE]
+    i <- 1:(T - h)
+    d <- data.frame(yh = yh[i], g = g[i], F_T[i, , drop = FALSE])
+    new <- data.frame(g = g[T], F_T[T, , drop = FALSE])
+    e_ar <- c(e_ar, yh[T] - predict(lm(yh ~ g, d), new))
+    e_fa <- c(e_fa, yh[T] - predict(lm(yh ~ ., d), new))
+  }
+  tibble(series, forecasts = length(e_ar),
+         RMSE_AR = sqrt(mean(e_ar^2)), RMSE_FA = sqrt(mean(e_fa^2)),
+         MAE_AR = mean(abs(e_ar)), MAE_FA = mean(abs(e_fa)),
+         DM_pvalue = forecast::dm.test(e_ar, e_fa, h = h, power = 2,
+                                       varestimator = "bartlett")$p.value)
+}
+
+direct_race("CPIAUCSL")
+res <- direct_race("CPIAUCSL")
+res |> print(width = Inf)     
+```
+
+Yes the factors help as both RMSE and MAE fall. Eyeballing it, it seems RMSE and MAE both fall by 10-15%. Now calculating it (2.11-1.89)/2.11 = 10.4% decrease for RMSE and (1.58-1.35)/1.58 =14.6% decrease in MAE. Yes this result is significant and we reject at all conventional significance levels. In total, the factors significantly improve the forecast and summarize the information from all the 121 series.
