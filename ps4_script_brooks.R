@@ -206,7 +206,7 @@ fm <- fm[, colSums(is.na(fm)) == 0]
 
 dim(fm)
 
-tcode[c("INDPRO", "PAYEMS", "cpiaucsl", "FEDFUNDS")]
+tcode[c("INDPRO", "PAYEMS", "CPIAUCSL", "FEDFUNDS")]
 
 
 Z <- fm |> select(-date) |> as.matrix()

@@ -1,6 +1,6 @@
 ---
 title: "Problem Set 4"
-author: "Your Name"
+author: "Owen Brooks"
 date: today
 format:
   html:
@@ -62,9 +62,28 @@ It appears that liquor sales increase in the summer (which makes sense) and then
 
 For ARIMA one lag of dependent, two lags of error, a seasonal difference with two seasonal lags and one error lag was chosen. For ETS it says forecast errors enter additively, that it has an additive undamped trend, and that the seasonal pattern is additive.
 
+```{r}
+liquor_fit <- liquor |>
+  model(arima = ARIMA(log(sales)),
+        ets   = ETS(log(sales)))
+
+liquor_fit |> select(arima) |> report()
+liquor_fit |> select(ets) |> report()
+```
+
 ## 2.2b
 
 We can reject the the ljung box test and say that the residuals are not white noise.
+
+```{r}
+liquor_fit |> select(arima) |> gg_tsresiduals()
+
+lb <- liquor_fit |>
+  select(arima) |>
+  augment() |>
+  features(.innov, ljung_box, lag = 24, dof = 6)
+lb
+```
 
 ## 2.3a
 
@@ -80,7 +99,7 @@ liquor_cv_fit <- readRDS("results/liquor_cv_fit.rds")
 liquor_cv_fc <- liquor_cv_fit |>
   forecast(h = 1)
 liquor_cv_fc |>
-  accuracy(liquor, measures = list(RMSE = RMSE, MAE = MAE))
+  accuracy(liquor, measures = list(RMSE = RMSE, MAE = MAE)) |> knitr::kable(digits = 2)
 
 liquor_errs <- liquor_cv_fc |>
   as_tibble() |>
@@ -107,7 +126,7 @@ liquor_combo_fc <- liquor_cv_fit |>
   forecast(h=1)
 
 liquor_combo_fc |> 
-  accuracy(liquor, measures = list(RMSE = RMSE, MAE = MAE))
+  accuracy(liquor, measures = list(RMSE = RMSE, MAE = MAE)) |> knitr::kable(digits = 2)
 
 ```
 
@@ -228,6 +247,7 @@ The BVAR(4) with lambda=0.3 beats the OLS VAR(4) on every variable. The reason i
 ## 4.3c
 
 ```{r}
+fc_bvar_03 <- readRDS("results/fc_bvar_03.rds")
 e_var4 <- actual[, "gdp"] - fc_var4[, 1]
 e_bvar <- actual[, "gdp"] - fc_bvar_03[, 1]
 
@@ -360,7 +380,9 @@ direct_race <- function(series, h = 12, r = 3) {
 
 direct_race("CPIAUCSL")
 res <- direct_race("CPIAUCSL")
-res |> print(width = Inf)     
+res |> print(width = Inf) 
+res <- direct_race("CPIAUCSL")
+res |> knitr::kable(digits = 3)
 ```
 
 Yes the factors help as both RMSE and MAE fall. Eyeballing it, it seems RMSE and MAE both fall by 10-15%. Now calculating it (2.11-1.89)/2.11 = 10.4% decrease for RMSE and (1.58-1.35)/1.58 =14.6% decrease in MAE. Yes this result is significant and we reject at all conventional significance levels. In total, the factors significantly improve the forecast and summarize the information from all the 121 series.

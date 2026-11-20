@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Your Name">
-<meta name="dcterms.date" content="2026-11-18">
+<meta name="dcterms.date" content="2026-11-19">
 
 <title>Problem Set 4</title>
 <style>
@@ -2226,6 +2226,7 @@ vertical-align: -.125em;
   <li><a href="#c-2" id="toc-c-2" class="nav-link" data-scroll-target="#c-2">5.2c</a></li>
   <li><a href="#section-4" id="toc-section-4" class="nav-link" data-scroll-target="#section-4">5.3</a></li>
   <li><a href="#section-5" id="toc-section-5" class="nav-link" data-scroll-target="#section-5">5.4</a></li>
+  <li><a href="#reflection" id="toc-reflection" class="nav-link" data-scroll-target="#reflection">Reflection</a></li>
   </ul>
 </nav>
 </div>
@@ -2250,7 +2251,7 @@ vertical-align: -.125em;
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">November 18, 2026</p>
+      <p class="date">November 19, 2026</p>
     </div>
   </div>
   
@@ -2743,6 +2744,10 @@ Cumulative Proportion  0.149840 0.223910 0.294530 0.350280 0.393820</code></pre>
 </div>
 </div>
 <p>Yes the factors help as both RMSE and MAE fall. Eyeballing it, it seems RMSE and MAE both fall by 10-15%. Now calculating it (2.11-1.89)/2.11 = 10.4% decrease for RMSE and (1.58-1.35)/1.58 =14.6% decrease in MAE. Yes this result is significant and we reject at all conventional significance levels. In total, the factors significantly improve the forecast and summarize the information from all the 121 series.</p>
+</section>
+<section id="reflection" class="level2">
+<h2 class="anchored" data-anchor-id="reflection">Reflection</h2>
+<p>I think that this has so far been the most interesting problem set (and one I will continually learn from). Actually coding up and implementing BVARs and VARs is exactly what I have been trying to learn and prepare myself for my work this summer. The common thread from all of this work is that there is a constant bias-variance trade off at play. With shrinkage (via BVAR) we are pulling noisy coefficients towards zero to reduce the estimation noise or when its with equal weights estimating more is not necessarily the best thing. With factors, reducing the information we are regressing on as much as possible helps us reduce estimation error in the same way. At the end of the day, all these methods are used to find signal in noise which in our world over lots of data is exactly what we need.</p>
 </section>
 
 </main>
