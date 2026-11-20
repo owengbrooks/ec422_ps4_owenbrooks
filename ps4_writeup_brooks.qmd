@@ -91,7 +91,7 @@ There will be 216 forecast origins (336 months - 120 window = 216).
 
 ## 2.3b
 
-The first forecast is Dec 2001 and last is Nov 2019 (it forecasts Dec 2019). Across the board, the ARIMA model forecasts more accurately in both RMSE and MAE.
+The first forecast is Jan 2002 and last is Dec 2019. Across the board, the ARIMA model forecasts more accurately in both RMSE and MAE.
 
 ```{r}
 liquor_cv_fit <- readRDS("results/liquor_cv_fit.rds")
@@ -116,7 +116,7 @@ forecast::dm.test(liquor_errs$arima, liquor_errs$snaive, h = 1, power = 2)
 
 ## 2.4
 
-The horse race between ARIMA and ETS has DM stat of -2.8635 and a p-value of 0.004604 and hence we conclude that ARIMA is significantly better than ETS. Between ARIMA and SNAIVE the DM stat is -10.72 and p-value is 2.2e-16 and so we conclude that ARIMA wins this horse race as well.
+The horse race between ARIMA and ETS has DM stat of -2.8635 and a p-value of 0.004604 and hence we conclude that ARIMA is significantly better than ETS. Between ARIMA and SNAIVE the DM stat is -10.72 and p-value is 2.2e-16 and so we conclude that ARIMA wins this horse race as well. I'd use ARIMA.
 
 ## 3
 
@@ -140,6 +140,10 @@ cor(liquor_errs$arima, liquor_errs$ets)
 ```
 
 The errors are positively correlated meaning that there wont' be much gain in combining the models. They are estimating something similar and doing it in a similar way and with a DM showing ARIMA just does it better, combining them only adds noise.
+
+## 4.1c
+
+120 forecasts per variable first for 1990 Q1 and last for 2019 Q4.
 
 ## 4.2
 
@@ -242,7 +246,7 @@ var_results <- readRDS("results/var_results.rds")
 var_results |> knitr::kable(digits = 3)
 ```
 
-The BVAR(4) with lambda=0.3 beats the OLS VAR(4) on every variable. The reason is that it shrinks the lags biasing the coefficients a little bit but in turn significantly decreases the variance. Compared to VAR(1), VAR(1) wins on some while loses on others which makes sense in part since both deal with decreasing the SE but one does it through shrinkage the other just cutting. At lambda=0.05 I think the model overshrinks and gets rid of information biasing the estimate more than it helps.
+The BVAR(4) with lambda=0.3 beats the OLS VAR(4) on every variable. The reason is that it shrinks the lags biasing the coefficients a little bit but in turn significantly decreases the variance. Compared to VAR(1), VAR(1) wins on some while loses on others which makes sense in part since both deal with decreasing the SE but one does it through shrinkage the other just cutting. At lambda=0.05 I think the model overshrinks and gets rid of information biasing the estimate more than it helps. It is not a fair estimate since we picked the winner on the same evaluation sample so its RMSE is biased.
 
 ## 4.3c
 

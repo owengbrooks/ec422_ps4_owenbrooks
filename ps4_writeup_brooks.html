@@ -2218,12 +2218,13 @@ vertical-align: -.125em;
   <li><a href="#section-1" id="toc-section-1" class="nav-link" data-scroll-target="#section-1">2.4</a></li>
   <li><a href="#section-2" id="toc-section-2" class="nav-link" data-scroll-target="#section-2">3</a></li>
   <li><a href="#b-3" id="toc-b-3" class="nav-link" data-scroll-target="#b-3">3b</a></li>
+  <li><a href="#c" id="toc-c" class="nav-link" data-scroll-target="#c">4.1c</a></li>
   <li><a href="#section-3" id="toc-section-3" class="nav-link" data-scroll-target="#section-3">4.2</a></li>
   <li><a href="#b-4" id="toc-b-4" class="nav-link" data-scroll-target="#b-4">4.3b</a></li>
-  <li><a href="#c" id="toc-c" class="nav-link" data-scroll-target="#c">4.3c</a></li>
-  <li><a href="#c-1" id="toc-c-1" class="nav-link" data-scroll-target="#c-1">5.1c</a></li>
+  <li><a href="#c-1" id="toc-c-1" class="nav-link" data-scroll-target="#c-1">4.3c</a></li>
+  <li><a href="#c-2" id="toc-c-2" class="nav-link" data-scroll-target="#c-2">5.1c</a></li>
   <li><a href="#a-2" id="toc-a-2" class="nav-link" data-scroll-target="#a-2">5.2a</a></li>
-  <li><a href="#c-2" id="toc-c-2" class="nav-link" data-scroll-target="#c-2">5.2c</a></li>
+  <li><a href="#c-3" id="toc-c-3" class="nav-link" data-scroll-target="#c-3">5.2c</a></li>
   <li><a href="#section-4" id="toc-section-4" class="nav-link" data-scroll-target="#section-4">5.3</a></li>
   <li><a href="#section-5" id="toc-section-5" class="nav-link" data-scroll-target="#section-5">5.4</a></li>
   <li><a href="#reflection" id="toc-reflection" class="nav-link" data-scroll-target="#reflection">Reflection</a></li>
@@ -2395,7 +2396,7 @@ Transformation: log(sales)
 </section>
 <section id="b-2" class="level2">
 <h2 class="anchored" data-anchor-id="b-2">2.3b</h2>
-<p>The first forecast is Dec 2001 and last is Nov 2019 (it forecasts Dec 2019). Across the board, the ARIMA model forecasts more accurately in both RMSE and MAE.</p>
+<p>The first forecast is Jan 2002 and last is Dec 2019. Across the board, the ARIMA model forecasts more accurately in both RMSE and MAE.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>liquor_cv_fit <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">&quot;results/liquor_cv_fit.rds&quot;</span>)</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -2466,7 +2467,7 @@ alternative hypothesis: two.sided</code></pre>
 </section>
 <section id="section-1" class="level2">
 <h2 class="anchored" data-anchor-id="section-1">2.4</h2>
-<p>The horse race between ARIMA and ETS has DM stat of -2.8635 and a p-value of 0.004604 and hence we conclude that ARIMA is significantly better than ETS. Between ARIMA and SNAIVE the DM stat is -10.72 and p-value is 2.2e-16 and so we conclude that ARIMA wins this horse race as well.</p>
+<p>The horse race between ARIMA and ETS has DM stat of -2.8635 and a p-value of 0.004604 and hence we conclude that ARIMA is significantly better than ETS. Between ARIMA and SNAIVE the DM stat is -10.72 and p-value is 2.2e-16 and so we conclude that ARIMA wins this horse race as well. I’d use ARIMA.</p>
 </section>
 <section id="section-2" class="level2">
 <h2 class="anchored" data-anchor-id="section-2">3</h2>
@@ -2527,6 +2528,10 @@ alternative hypothesis: two.sided</code></pre>
 </div>
 </div>
 <p>The errors are positively correlated meaning that there wont’ be much gain in combining the models. They are estimating something similar and doing it in a similar way and with a DM showing ARIMA just does it better, combining them only adds noise.</p>
+</section>
+<section id="c" class="level2">
+<h2 class="anchored" data-anchor-id="c">4.1c</h2>
+<p>120 forecasts per variable first for 1990 Q1 and last for 2019 Q4.</p>
 </section>
 <section id="section-3" class="level2">
 <h2 class="anchored" data-anchor-id="section-3">4.2</h2>
@@ -2694,10 +2699,10 @@ alternative hypothesis: two.sided</code></pre>
 </table>
 </div>
 </div>
-<p>The BVAR(4) with lambda=0.3 beats the OLS VAR(4) on every variable. The reason is that it shrinks the lags biasing the coefficients a little bit but in turn significantly decreases the variance. Compared to VAR(1), VAR(1) wins on some while loses on others which makes sense in part since both deal with decreasing the SE but one does it through shrinkage the other just cutting. At lambda=0.05 I think the model overshrinks and gets rid of information biasing the estimate more than it helps.</p>
+<p>The BVAR(4) with lambda=0.3 beats the OLS VAR(4) on every variable. The reason is that it shrinks the lags biasing the coefficients a little bit but in turn significantly decreases the variance. Compared to VAR(1), VAR(1) wins on some while loses on others which makes sense in part since both deal with decreasing the SE but one does it through shrinkage the other just cutting. At lambda=0.05 I think the model overshrinks and gets rid of information biasing the estimate more than it helps. It is not a fair estimate since we picked the winner on the same evaluation sample so its RMSE is biased.</p>
 </section>
-<section id="c" class="level2">
-<h2 class="anchored" data-anchor-id="c">4.3c</h2>
+<section id="c-1" class="level2">
+<h2 class="anchored" data-anchor-id="c-1">4.3c</h2>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>fc_bvar_03 <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">&quot;results/fc_bvar_03.rds&quot;</span>)</span>
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>e_var4 <span class="ot">&lt;-</span> actual[, <span class="st">&quot;gdp&quot;</span>] <span class="sc">-</span> fc_var4[, <span class="dv">1</span>]</span>
@@ -2728,8 +2733,8 @@ alternative hypothesis: two.sided</code></pre>
 </div>
 <p>Both DM stats are positive, so the BVAR(4) lambda = 0.3 is the better model . The FFR that has the largest RMSE is only barely significant suggesting that the small gaps in 4.3b shouldn’t really be seen as meaningful.</p>
 </section>
-<section id="c-1" class="level2">
-<h2 class="anchored" data-anchor-id="c-1">5.1c</h2>
+<section id="c-2" class="level2">
+<h2 class="anchored" data-anchor-id="c-2">5.1c</h2>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>tcode[<span class="fu">c</span>(<span class="st">&quot;INDPRO&quot;</span>, <span class="st">&quot;PAYEMS&quot;</span>, <span class="st">&quot;cpiaucsl&quot;</span>, <span class="st">&quot;FEDFUNDS&quot;</span>)]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
@@ -2772,8 +2777,8 @@ Cumulative Proportion  0.149840 0.223910 0.294530 0.350280 0.393820</code></pre>
 </div>
 </div>
 </section>
-<section id="c-2" class="level2">
-<h2 class="anchored" data-anchor-id="c-2">5.2c</h2>
+<section id="c-3" class="level2">
+<h2 class="anchored" data-anchor-id="c-3">5.2c</h2>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sort</span>(<span class="fu">abs</span>(<span class="fu">cor</span>(pc<span class="sc">$</span>x[, <span class="dv">1</span>], Z))[<span class="dv">1</span>, ], <span class="at">decreasing =</span> <span class="cn">TRUE</span>)[<span class="dv">1</span><span class="sc">:</span><span class="dv">8</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
