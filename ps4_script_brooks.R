@@ -88,6 +88,9 @@ liquor_combo_fc <- liquor_cv_fit |>
 liquor_combo_fc |> 
   accuracy(liquor, measures = list(RMSE = RMSE, MAE = MAE))
 
+
+cor(liquor_errs$arima, liquor_errs$ets)
+
 qd_raw <-  read_csv("data/fredqd_2026-09.csv", show_col_types = FALSE) |>
   slice(-(1:2))
 
@@ -180,6 +183,14 @@ saveRDS(var_results, "results/var_results.rds")
 var_results |> knitr::kable(digits = 3)
 
 
+e_var4 <- actual[, "gdp"] - fc_var4[, 1]
+e_bvar <- actual[, "gdp"] - fc_bvar_03[, 1]
+forecast::dm.test(e_var4, e_bvar, h = 1, power = 2)
+
+e_var4_ffr <- actual[, "ffr"] - fc_var4[, 7]
+e_bvar_ffr <- actual[, "ffr"] - fc_bvar_03[, 7]
+forecast::dm.test(e_var4_ffr, e_bvar_ffr, h = 1, power = 2)
+
 md_raw <- read_csv("data/fredmd_2026-09.csv", show_col_types = FALSE)
 tcode <- unlist(md_raw[1, -1])
 md <- md_raw[-1, ] |> mutate(date=as.Date(sasdate, "%m/%d/%Y"))
@@ -223,6 +234,8 @@ tibble(date = fm$date, F1 = F1) |>
   labs(title = "First Factor from FRED-MD", x = NULL, y = NULL) +
   theme_minimal()
 
+sort(abs(cor(pc$x[, 1], Z))[1, ], decreasing = TRUE)[1:8]
+sort(abs(cor(pc$x[, 2], Z))[1, ], decreasing = TRUE)[1:8]
 
 ip <- fm$INDPRO
 n <- nrow(Z)
